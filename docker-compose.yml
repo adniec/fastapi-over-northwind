@@ -23,3 +23,12 @@ services:
       - ./dbdata:/var/lib/postgresql/data
       - ./northwind.sql:/docker-entrypoint-initdb.d/northwind.sql
 
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx_config.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - test_service
+
