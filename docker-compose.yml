@@ -1,6 +1,18 @@
 version: '3'
 
 services:
+  test_service:
+    build: ./test-service
+    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+    volumes:
+      - ./test-service/:/app/
+    ports:
+      - 8001:8000
+    environment:
+      - DATABASE_URI=postgresql://northwind_user:thewindisblowing@db/northwind
+    depends_on:
+      - db
+
   db:
     image: postgres:12
     environment:
@@ -10,3 +22,4 @@ services:
     volumes:
       - ./dbdata:/var/lib/postgresql/data
       - ./northwind.sql:/docker-entrypoint-initdb.d/northwind.sql
+
