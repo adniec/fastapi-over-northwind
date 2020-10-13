@@ -1,66 +1,34 @@
-# Northwind database for Postgres
+### Mikroserwisowa aplikacja do łączenia się z bazą "Northwind" w oparciu o PostgreSQL oraz FastApi
 
-A simple sql script that will populate a database with the famous northwind example,
-adapted for postgres.
+![Diagram](docs/ER.png)
 
-<img src=ER.png />
+### Struktura projektu
 
-## Getting started:
+Główny folder zawiera pliki niezbędne do stworzenia bazy, na której będziemy operować oraz przygotowania środowiska 
+pracy. Znajdziemy w nim pliki konfiguracyjne takie jak: [docker-compose.yml](docker-compose.yml) umożliwiający 
+dostosowanie kontenerów czy [nginx_config.conf](nginx_config.conf) odpowiedzialny za ustawienia serwera. Znajduje się 
+tu również plik [northwind.sql](northwind.sql), dzięki któremu tworzona jest nasza baza.
 
-### Manually
+Do folderu `docs` sukcesywnie będzię dodawana dokumentacja uzyskana podczas rozwijania projektu.
 
-Use the provided sql file `nortwhind.sql` in order to populate your database.
+Serwisy komunikujące się z bazą danych zostaną stosownie dodane w odpowiednich folderach, przykładowo `test-service`.
 
-### With Docker and docker compose
+### Uruchomienie
 
-#### Pre-requirement: install docker and docker-compose
+Wymagana jest wcześniejsza instalacja [dockera](https://www.docker.com/get-started) oraz 
+[docker-compose](https://docs.docker.com/compose/install/). Następnie wykonujemy kolejno komendy w terminalu:
 
- https://www.docker.com/get-started
-
- https://docs.docker.com/compose/install/
-
-
-#### 1. run docker-compose
-
-```bash
-> docker-compose up
-
-...
-... Lots of messages...
-...
-Creating network "northwind_psql_default" with the default driver
-Creating northwind_psql_db_1 ... done
-db_1  | 2019-11-28 21:07:14.357 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
-db_1  | 2019-11-28 21:07:14.357 UTC [1] LOG:  listening on IPv6 address "::", port 5432
-db_1  | 2019-11-28 21:07:14.364 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
-db_1  | 2019-11-28 21:07:14.474 UTC [1] LOG:  database system is ready to accept connections
+```
+git clone https://github.com/ethru/northwind_psql.git
+cd northwind_psql
+docker-compose up
 ```
 
-#### 2. run psql client in the docker-compose container
+Po wykonaniu powyższych czynności jesteśmy w stanie komunikować się z naszym api za pomocą przeglądarki. By zobaczyć 
+dokumentację oraz przetestować działanie danego serwisu należy przejść pod adres `http://0.0.0.0:8080/api/test/docs` 
+(pokazane na przykładzie `test-service`).
 
-Open another terminal window, and type:
+![Test](docs/test.png)
 
-````bash
-> docker-compose exec db psql -U northwind_user -d northwind
-
-psql (10.5 (Debian 10.5-1.pgdg90+1))
-Type "help" for help.
-
-postgres=# select * from us_states;
- state_id |      state_name      | state_abbr | state_region
-----------+----------------------+------------+--------------
-        1 | Alabama              | AL         | south
-        2 | Alaska               | AK         | north
-        ...
-````
-
-#### 3. stop docker-compose
-
-Stop the server that was launched by `docker compose up` via `Ctrl-C`, then remove the containers via:
-
-```bash
-docker-compose down
-```
-
-Your modifications will be persisted in the `dabata/` local folder, and can be retrieved
-once you restart `docker compose up`.
+Po kliknięciu na interesujący nas endpoint zostanie wyświetlony jego opis. Możemy wtedy użyć przycisku `Try it out` a 
+następnie `Execute` by zobaczyć informację zwrotną z danego zapytania.
