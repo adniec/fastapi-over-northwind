@@ -1,6 +1,6 @@
 ### Mikroserwisowa aplikacja do łączenia się z bazą "Northwind" w oparciu o PostgreSQL oraz FastApi
 
-![Diagram](docs/ER.png)
+![Diagram](docs/img/ER.png)
 
 ### Struktura projektu
 
@@ -28,7 +28,15 @@ Po wykonaniu powyższych czynności jesteśmy w stanie komunikować się z naszy
 dokumentację oraz przetestować działanie danego serwisu należy przejść pod adres `http://0.0.0.0:8080/api/test/docs` 
 (pokazane na przykładzie `test-service`).
 
-![Test](docs/test.png)
+![Test](docs/img/test.png)
 
 Po kliknięciu na interesujący nas endpoint zostanie wyświetlony jego opis. Możemy wtedy użyć przycisku `Try it out` a 
 następnie `Execute` by zobaczyć informację zwrotną z danego zapytania.
+
+### Dokumentacja
+
+- [Wprowadzenie](docs/Wprowadzenie.pdf) do projektu oraz używanych technologii
+
+### Realizacja
+
+- Adrian Nieć
