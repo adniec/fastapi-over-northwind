@@ -17,7 +17,7 @@ services:
     build: ./categories-service
     command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
     volumes:
-      - ./test-service/:/app/
+      - ./categories-service/:/app/
     ports:
       - 8002:8000
     environment:
