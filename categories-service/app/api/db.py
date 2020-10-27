@@ -3,6 +3,8 @@ import os
 from databases import Database
 from sqlalchemy import Column, Integer, LargeBinary, MetaData, String, Table, create_engine
 
+from app.api.models import CategoryIn, CategoryOut
+
 DATABASE_URI = os.getenv('DATABASE_URI')
 
 engine = create_engine(DATABASE_URI)
@@ -18,3 +20,8 @@ categories = Table(
 )
 
 database = Database(DATABASE_URI)
+
+
+async def add_category(payload: CategoryIn):
+    query = categories.insert().values(**payload.dict())
+    return await database.execute(query=query)
