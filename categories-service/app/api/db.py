@@ -29,3 +29,14 @@ async def get_categories():
 async def add_category(payload: CategoryIn):
     query = categories.insert().values(**payload.dict())
     return await database.execute(query=query)
+
+
+async def get_unlisted_category():
+    name = 'UNLISTED'
+    query = 'SELECT category_id FROM categories WHERE category_name=:name'
+    unlisted = await database.fetch_one(query=query, values={'name': name})
+    if unlisted:
+        return unlisted['category_id']
+
+    unlisted = CategoryIn(category_name=name, description='', picture='')
+    return await add_category(unlisted)
