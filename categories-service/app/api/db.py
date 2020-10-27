@@ -22,6 +22,10 @@ categories = Table(
 database = Database(DATABASE_URI)
 
 
+async def get_categories():
+    return await database.fetch_all(query=categories.select())
+
+
 async def add_category(payload: CategoryIn):
     query = categories.insert().values(**payload.dict())
     return await database.execute(query=query)
