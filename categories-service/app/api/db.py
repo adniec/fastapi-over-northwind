@@ -46,3 +46,17 @@ async def get_unlisted_category():
 
     unlisted = CategoryIn(category_name=name, description='', picture='')
     return await add_category(unlisted)
+
+
+@database.transaction()
+async def delete(category_id):
+    """Remove category with set id from database.
+
+    Unlink all products connected to that category by replacing category_id with id of unlisted category.
+    """
+    empty = await get_unlisted_category()
+    query = "UPDATE products SET category_id = :empty WHERE category_id = :id"
+    await database.execute(query=query, values={'empty': empty, 'id': category_id})
+
+    query = categories.delete().where(categories.c.category_id == category_id).returning(categories)
+    return await database.execute(query=query)

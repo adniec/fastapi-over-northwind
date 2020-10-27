@@ -23,3 +23,10 @@ async def create(payload: CategoryIn):
     }
 
     return response
+
+
+@categories.delete('/del/{category_id}')
+async def delete(category_id: int):
+    """Delete category with set id."""
+    result = await db.delete(category_id)
+    return {'Deleted': result}
