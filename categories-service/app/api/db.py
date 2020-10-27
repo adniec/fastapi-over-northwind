@@ -23,15 +23,21 @@ database = Database(DATABASE_URI)
 
 
 async def get_categories():
+    """Get all categories stored in database."""
     return await database.fetch_all(query=categories.select())
 
 
 async def add_category(payload: CategoryIn):
+    """Store new category in database."""
     query = categories.insert().values(**payload.dict())
     return await database.execute(query=query)
 
 
 async def get_unlisted_category():
+    """Return id of UNLISTED category.
+
+    If category does not exist then create it.
+    """
     name = 'UNLISTED'
     query = 'SELECT category_id FROM categories WHERE category_name=:name'
     unlisted = await database.fetch_one(query=query, values={'name': name})
