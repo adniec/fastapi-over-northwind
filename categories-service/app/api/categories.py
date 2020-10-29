@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from typing import List
 
 from app.api import db
 from app.api.models import CategoryIn, CategoryOut, CategoryUpdate
@@ -6,11 +7,10 @@ from app.api.models import CategoryIn, CategoryOut, CategoryUpdate
 categories = APIRouter()
 
 
-@categories.get('/all')
+@categories.get('/all', response_model=List[CategoryOut])
 async def get_all():
     """Return all categories stored in database."""
-    all_categories = await db.get_categories()
-    return {'Categories': all_categories}
+    return await db.get_categories()
 
 
 @categories.get('/{category_id}', response_model=CategoryOut)
@@ -24,18 +24,14 @@ async def get_by_id(category_id: int):
 
 @categories.post('/new', response_model=CategoryOut, status_code=201)
 async def create(payload: CategoryIn):
+    """Create new category from send data."""
     category_id = await db.add_category(payload)
-
-    response = {
-        'category_id': category_id,
-        **payload.dict()
-    }
-
-    return response
+    return CategoryOut(**payload.dict(), category_id=category_id)
 
 
 @categories.put('/update/{category_id}', response_model=CategoryOut)
 async def update(category_id: int, payload: CategoryUpdate):
+    """Update category with set id by sent payload."""
     category = await get_by_id(category_id)
 
     data = CategoryIn(**category)
@@ -46,8 +42,10 @@ async def update(category_id: int, payload: CategoryUpdate):
         return CategoryOut(**merged.dict(), category_id=category_id)
 
 
-@categories.delete('/del/{category_id}')
+@categories.delete('/del/{category_id}', response_model=CategoryOut)
 async def delete(category_id: int):
     """Delete category with set id."""
-    result = await db.delete(category_id)
-    return {'Deleted': result}
+    category = await get_by_id(category_id)
+
+    if category_id == await db.delete(category_id):
+        return category

@@ -62,7 +62,7 @@ async def update(category_id: int, payload: CategoryIn):
 
 
 @database.transaction()
-async def delete(category_id):
+async def delete(category_id: int):
     """Remove category with set id from database.
 
     Unlink all products connected to that category by replacing category_id with id of unlisted category.
