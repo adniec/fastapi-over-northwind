@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException
+import base64
+from fastapi import APIRouter, File, UploadFile, HTTPException
+import imghdr
 from typing import List
 
 from app.api import db
@@ -27,6 +29,15 @@ async def create(payload: CategoryIn):
     """Create new category from send data."""
     category_id = await db.add_category(payload)
     return CategoryOut(**payload.dict(), category_id=category_id)
+
+
+@categories.post("/update/img/{category_id}")
+async def upload_file(category_id: int, file: UploadFile = File(...)):
+    """Update category with set id by chosen image."""
+    if not imghdr.what(file.file):
+        raise HTTPException(status_code=415, detail="Wrong image format.")
+    image = base64.encodebytes(file.file.read()).decode()
+    return await update(category_id, CategoryUpdate(picture=image))
 
 
 @categories.put('/update/{category_id}', response_model=CategoryOut)
