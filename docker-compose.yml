@@ -22,6 +22,8 @@ services:
       - 8002:8000
     environment:
       - DATABASE_URI=postgresql://northwind_user:thewindisblowing@db/northwind
+      - SERVICE_USER=admin
+      - PASSWORD=password
     depends_on:
       - db
 

@@ -1,12 +1,29 @@
 import base64
-from fastapi import APIRouter, File, UploadFile, HTTPException
 import imghdr
+import os
+import secrets
 from typing import List
+
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from app.api import db
 from app.api.models import CategoryIn, CategoryOut, CategoryUpdate
 
 categories = APIRouter()
+security = HTTPBasic()
+
+
+def authorize(credentials: HTTPBasicCredentials = Depends(security)):
+    is_user_ok = secrets.compare_digest(credentials.username, os.getenv('SERVICE_USER'))
+    is_pass_ok = secrets.compare_digest(credentials.password, os.getenv('PASSWORD'))
+
+    if not (is_user_ok and is_pass_ok):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Incorrect email or password.',
+            headers={'WWW-Authenticate': 'Basic'},
+        )
 
 
 @categories.get('/all', response_model=List[CategoryOut])
@@ -20,27 +37,27 @@ async def get_by_id(category_id: int):
     """Return category with set id."""
     category = await db.get_category(category_id)
     if not category:
-        raise HTTPException(status_code=404, detail="Category not found.")
+        raise HTTPException(status_code=404, detail='Category not found.')
     return category
 
 
-@categories.post('/new', response_model=CategoryOut, status_code=201)
+@categories.post('/new', response_model=CategoryOut, status_code=201, dependencies=[Depends(authorize)])
 async def create(payload: CategoryIn):
     """Create new category from send data."""
     category_id = await db.add_category(payload)
     return CategoryOut(**payload.dict(), category_id=category_id)
 
 
-@categories.post("/update/img/{category_id}")
+@categories.post('/update/img/{category_id}', dependencies=[Depends(authorize)])
 async def upload_file(category_id: int, file: UploadFile = File(...)):
     """Update category with set id by chosen image."""
     if not imghdr.what(file.file):
-        raise HTTPException(status_code=415, detail="Wrong image format.")
+        raise HTTPException(status_code=415, detail='Wrong image format.')
     image = base64.encodebytes(file.file.read()).decode()
     return await update(category_id, CategoryUpdate(picture=image))
 
 
-@categories.put('/update/{category_id}', response_model=CategoryOut)
+@categories.put('/update/{category_id}', response_model=CategoryOut, dependencies=[Depends(authorize)])
 async def update(category_id: int, payload: CategoryUpdate):
     """Update category with set id by sent payload."""
     category = await get_by_id(category_id)
@@ -53,7 +70,7 @@ async def update(category_id: int, payload: CategoryUpdate):
         return CategoryOut(**merged.dict(), category_id=category_id)
 
 
-@categories.delete('/del/{category_id}', response_model=CategoryOut)
+@categories.delete('/del/{category_id}', response_model=CategoryOut, dependencies=[Depends(authorize)])
 async def delete(category_id: int):
     """Delete category with set id."""
     category = await get_by_id(category_id)
