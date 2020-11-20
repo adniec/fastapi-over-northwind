@@ -42,6 +42,20 @@ services:
     depends_on:
       - db
 
+  products_service:
+    build: ./products-service
+    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+    volumes:
+      - ./products-service/:/app/
+    ports:
+      - 8004:8000
+    environment:
+      - AUTH_SERVICE_URL=http://auth_service:8000/api/auth/basic
+      - DATABASE_URI=postgresql://northwind_user:thewindisblowing@db/northwind
+    depends_on:
+      - auth_service
+      - db
+
   db:
     image: postgres:12
     environment:
@@ -62,3 +76,4 @@ services:
       - auth_service
       - test_service
       - categories_service
+      - products_service
