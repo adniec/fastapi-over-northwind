@@ -1,29 +1,23 @@
 import base64
+import httpx
 import imghdr
 import os
-import secrets
 from typing import List
 
-from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
+from fastapi.security import HTTPBasicCredentials, HTTPBearer
 
 from app.api import db
 from app.api.models import CategoryIn, CategoryOut, CategoryUpdate
 
 categories = APIRouter()
-security = HTTPBasic()
+security = HTTPBearer()
 
 
 def authorize(credentials: HTTPBasicCredentials = Depends(security)):
-    is_user_ok = secrets.compare_digest(credentials.username, os.getenv('SERVICE_USER'))
-    is_pass_ok = secrets.compare_digest(credentials.password, os.getenv('PASSWORD'))
-
-    if not (is_user_ok and is_pass_ok):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Incorrect email or password.',
-            headers={'WWW-Authenticate': 'Basic'},
-        )
+    response = httpx.get(os.getenv('AUTH_SERVICE_URL'), headers={'Authorization': credentials.credentials})
+    if response.status_code == 401:
+        raise HTTPException(status_code=401)
 
 
 @categories.get('/all', response_model=List[CategoryOut])

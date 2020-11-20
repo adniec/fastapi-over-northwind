@@ -23,10 +23,10 @@ services:
     ports:
       - 8002:8000
     environment:
+      - AUTH_SERVICE_URL=http://auth_service:8000/api/auth/basic
       - DATABASE_URI=postgresql://northwind_user:thewindisblowing@db/northwind
-      - SERVICE_USER=admin
-      - PASSWORD=password
     depends_on:
+      - auth_service
       - db
 
   auth_service:
