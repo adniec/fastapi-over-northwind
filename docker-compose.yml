@@ -106,6 +106,14 @@ services:
     depends_on:
       - nginx
 
+  node_exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    ports:
+      - 9004:9100
+    depends_on:
+      - prometheus
+
   nginx:
     image: nginx:latest
     ports:
