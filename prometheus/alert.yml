@@ -1,0 +1,49 @@
+groups:
+  - name: MetricsAlerts
+    rules:
+      - alert: CadvisorDown
+        expr: up{job="cadvisor"} < 1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Service Down"
+          description: "All instances of {{ $labels.job }} has been down for more than one minute."
+
+  - name: AviabilityAlerts
+    rules:
+      - alert: AuthDown
+        expr: absent(container_memory_usage_bytes{name="auth"})
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service Down"
+          description: "All instances of {{ $labels.name }} has been down for more than one minute."
+
+      - alert: CategoriesDown
+        expr: absent(container_memory_usage_bytes{name="categories"})
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service Down"
+          description: "All instances of {{ $labels.name }} has been down for more than one minute."
+
+      - alert: OrdersDown
+        expr: absent(container_memory_usage_bytes{name="orders"})
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service Down"
+          description: "All instances of {{ $labels.name }} has been down for more than one minute."
+
+      - alert: ProductsDown
+        expr: absent(container_memory_usage_bytes{name="products"})
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service Down"
+          description: "All instances of {{ $labels.name }} has been down for more than one minute."

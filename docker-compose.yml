@@ -3,6 +3,7 @@ version: '3'
 services:
   test_service:
     build: ./test-service
+    container_name: test
     command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
     volumes:
       - ./test-service/:/app/
@@ -17,6 +18,7 @@ services:
 
   categories_service:
     build: ./categories-service
+    container_name: categories
     command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
     volumes:
       - ./categories-service/:/app/
@@ -31,6 +33,7 @@ services:
 
   auth_service:
     build: ./auth-service
+    container_name: auth
     command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
     volumes:
       - ./auth-service/:/app/
@@ -44,6 +47,7 @@ services:
 
   products_service:
     build: ./products-service
+    container_name: products
     command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
     volumes:
       - ./products-service/:/app/
@@ -58,6 +62,7 @@ services:
 
   orders_service:
     build: ./orders-service
+    container_name: orders
     command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
     volumes:
       - ./orders-service/:/app/
@@ -73,6 +78,7 @@ services:
 
   db:
     image: postgres:12
+    container_name: db
     environment:
       POSTGRES_DB: northwind
       POSTGRES_USER: northwind_user
@@ -92,6 +98,16 @@ services:
     command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yml
     depends_on:
       - cadvisor
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    ports:
+      - 9001:9093
+    volumes:
+      - ./prometheus:/etc/alertmanager
+    depends_on:
+      - prometheus
 
   cadvisor:
     image: gcr.io/google-containers/cadvisor
@@ -116,6 +132,7 @@ services:
 
   nginx:
     image: nginx:latest
+    container_name: nginx
     ports:
       - "8080:8080"
     volumes:
