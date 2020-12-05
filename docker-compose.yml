@@ -109,6 +109,22 @@ services:
     depends_on:
       - prometheus
 
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 9002:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/:/etc/grafana/provisioning/
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=password
+      - GF_USERS_ALLOW_SIGN_UP=false
+    restart: always
+    depends_on:
+      - prometheus
+
   cadvisor:
     image: gcr.io/google-containers/cadvisor
     container_name: cadvisor
@@ -145,3 +161,4 @@ services:
 
 volumes:
   prometheus_data:
+  grafana_data:
