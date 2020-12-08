@@ -3,5 +3,6 @@ databases[postgresql]==0.3.2
 fastapi==0.61.1
 SQLAlchemy==1.3.20
 uvicorn==0.11.3
-httpx==0.16.1
 python-multipart==0.0.5
+asyncio==3.4.3
+aiohttp==3.7.3

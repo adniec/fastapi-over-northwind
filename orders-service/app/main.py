@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.api.auth import session
 from app.api.orders import orders
 from app.api.db import database, engine, metadata
 
@@ -16,6 +17,7 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     await database.disconnect()
+    await session.close()
 
 
 app.include_router(orders, prefix='/api/orders', tags=['orders'])
