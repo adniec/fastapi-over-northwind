@@ -3,7 +3,7 @@ import os
 from databases import Database
 from sqlalchemy import Column, Integer, LargeBinary, MetaData, String, Table, create_engine
 
-from app.api.models import CategoryIn
+from app.api.models import CategoryIn, CategoryOut
 
 DATABASE_URI = os.getenv('DATABASE_URI')
 
@@ -53,10 +53,10 @@ async def get_unlisted_category():
     return await add_category(unlisted)
 
 
-async def update(category_id: int, payload: CategoryIn):
+async def update(payload: CategoryOut):
     """Update category with set id in database."""
     query = categories.update().where(
-        categories.c.category_id == category_id
+        categories.c.category_id == payload.category_id
     ).values(**payload.dict()).returning(categories)
     return await database.execute(query=query)
 

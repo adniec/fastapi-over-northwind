@@ -46,21 +46,21 @@ async def upload_file(category_id: int, file: UploadFile = File(...)):
     if not imghdr.what(file.file):
         raise HTTPException(status_code=415, detail='Wrong image format.')
     image = base64.encodebytes(file.file.read()).decode()
-    return await update(category_id, CategoryUpdate(picture=image))
+    return await update(CategoryUpdate(category_id=category_id, picture=image))
 
 
 @request_metrics.time()
-@categories.put('/update/{category_id}', response_model=CategoryOut, dependencies=[Depends(authorize)])
-async def update(category_id: int, payload: CategoryUpdate):
+@categories.put('/update', response_model=CategoryOut, dependencies=[Depends(authorize)])
+async def update(payload: CategoryUpdate):
     """Update category with set id by sent payload."""
-    category = await get_by_id(category_id)
+    category = await get_by_id(payload.category_id)
 
-    data = CategoryIn(**category)
+    data = CategoryOut(**category)
     new_data = payload.dict(exclude_unset=True)
     merged = data.copy(update=new_data)
 
-    if category_id == await db.update(category_id, merged):
-        return CategoryOut(**merged.dict(), category_id=category_id)
+    if payload.category_id == await db.update(merged):
+        return merged
 
 
 @request_metrics.time()

@@ -12,7 +12,7 @@ class CategoryOut(CategoryIn):
     category_id: int
 
 
-class CategoryUpdate(CategoryIn):
+class CategoryUpdate(CategoryOut):
     category_name: Optional[str] = None
     description: Optional[str] = None
     picture: Optional[bytes] = None
