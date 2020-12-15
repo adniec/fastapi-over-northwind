@@ -27,3 +27,8 @@ scrape_configs:
     static_configs:
       - targets:
           - node_exporter:9100
+  - job_name: categories-metrics
+    metrics_path: /api/categories/metrics
+    static_configs:
+      - targets:
+          - categories:8000

@@ -3,6 +3,7 @@ import imghdr
 from typing import List
 
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
+from prometheus_client import Summary
 
 from app.api import db
 from app.api.auth import authorize
@@ -10,13 +11,17 @@ from app.api.models import CategoryIn, CategoryOut, CategoryUpdate
 
 categories = APIRouter()
 
+request_metrics = Summary('request_processing_seconds', 'Time spent processing request')
 
+
+@request_metrics.time()
 @categories.get('/all', response_model=List[CategoryOut])
 async def get_all():
     """Return all categories stored in database."""
     return await db.get_categories()
 
 
+@request_metrics.time()
 @categories.get('/{category_id}', response_model=CategoryOut)
 async def get_by_id(category_id: int):
     """Return category with set id."""
@@ -26,6 +31,7 @@ async def get_by_id(category_id: int):
     return category
 
 
+@request_metrics.time()
 @categories.post('/new', response_model=CategoryOut, status_code=201, dependencies=[Depends(authorize)])
 async def create(payload: CategoryIn):
     """Create new category from send data."""
@@ -33,6 +39,7 @@ async def create(payload: CategoryIn):
     return CategoryOut(**payload.dict(), category_id=category_id)
 
 
+@request_metrics.time()
 @categories.post('/update/img/{category_id}', dependencies=[Depends(authorize)])
 async def upload_file(category_id: int, file: UploadFile = File(...)):
     """Update category with set id by chosen image."""
@@ -42,6 +49,7 @@ async def upload_file(category_id: int, file: UploadFile = File(...)):
     return await update(category_id, CategoryUpdate(picture=image))
 
 
+@request_metrics.time()
 @categories.put('/update/{category_id}', response_model=CategoryOut, dependencies=[Depends(authorize)])
 async def update(category_id: int, payload: CategoryUpdate):
     """Update category with set id by sent payload."""
@@ -55,6 +63,7 @@ async def update(category_id: int, payload: CategoryUpdate):
         return CategoryOut(**merged.dict(), category_id=category_id)
 
 
+@request_metrics.time()
 @categories.delete('/del/{category_id}', response_model=CategoryOut, dependencies=[Depends(authorize)])
 async def delete(category_id: int):
     """Delete category with set id."""
