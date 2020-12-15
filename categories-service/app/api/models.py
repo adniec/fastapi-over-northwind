@@ -1,5 +1,18 @@
-from pydantic import BaseModel
 from typing import Optional
+
+from pydantic import BaseModel
+from sqlalchemy import Column, Integer, LargeBinary, String, Table
+
+from app.api import metadata
+
+categories = Table(
+    'categories',
+    metadata,
+    Column('category_id', Integer, primary_key=True),
+    Column('category_name', String),
+    Column('description', String),
+    Column('picture', LargeBinary)
+)
 
 
 class CategoryIn(BaseModel):

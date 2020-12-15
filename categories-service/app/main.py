@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
+from app.api import database, engine, metadata
 from app.api.auth import session
 from app.api.categories import categories
-from app.api.db import database, engine, metadata
 
 metadata.create_all(engine)
 
