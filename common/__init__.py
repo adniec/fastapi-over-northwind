@@ -1,7 +1,7 @@
 import os
 
-from sqlalchemy import MetaData, create_engine
 from databases import Database
+from sqlalchemy import MetaData, create_engine
 
 DATABASE_URI = os.getenv('DATABASE_URI')
 
