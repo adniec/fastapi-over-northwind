@@ -1,5 +1,24 @@
-from pydantic import BaseModel
 from typing import Optional
+
+from pydantic import BaseModel
+from sqlalchemy import Column, Integer, String, Table
+
+from app.api import metadata
+
+products = Table(
+    'products',
+    metadata,
+    Column('product_id', Integer, primary_key=True),
+    Column('product_name', String),
+    Column('supplier_id', Integer),
+    Column('category_id', Integer),
+    Column('quantity_per_unit', String),
+    Column('unit_price', Integer),
+    Column('units_in_stock', Integer),
+    Column('units_on_order', Integer),
+    Column('reorder_level', Integer),
+    Column('discontinued', Integer),
+)
 
 
 class Product(BaseModel):
