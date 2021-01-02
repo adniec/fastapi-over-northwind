@@ -1,12 +1,15 @@
 from fastapi import FastAPI
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 
+from app.api import database, engine, metadata
 from app.api.auth import session
 from app.api.orders import orders
-from app.api.db import database, engine, metadata
 
 metadata.create_all(engine)
 
 app = FastAPI(openapi_url="/api/orders/openapi.json", docs_url="/api/orders/docs")
+app.add_middleware(PrometheusMiddleware)
+app.add_route("/api/orders/metrics", handle_metrics)
 
 
 @app.on_event("startup")

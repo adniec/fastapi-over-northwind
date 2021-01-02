@@ -32,3 +32,8 @@ scrape_configs:
     static_configs:
       - targets:
           - categories:8000
+  - job_name: orders-metrics
+    metrics_path: /api/orders/metrics
+    static_configs:
+      - targets:
+          - orders:8000
