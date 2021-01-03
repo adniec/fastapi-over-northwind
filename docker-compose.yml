@@ -77,6 +77,8 @@ services:
     environment:
       - AUTH_SERVICE_URL=http://auth_service:8000/api/auth/basic
       - DATABASE_URI=postgresql://northwind_user:thewindisblowing@db/northwind
+      - PAYPAL_CLIENT=Acf6UcFexAEmTjjuHcNJWTiS07SiJ1UC24p7XofwuJD0pPX_jJBRf3RbnivVvkT6fJ8vZbFAezJA5vfM
+      - PAYPAL_SECRET=EPXxxbwo-sKBW764n9LKDVytixvLXBeGTsf9E8ZVHzKpBaGrH-8ejxfF9lp7UiDsCbfsDUR9321DNwOa
     depends_on:
       - auth_service
       - products_service
