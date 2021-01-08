@@ -31,6 +31,8 @@ async def order(product_id: int, quantity: int):
     Return unit price if units are available in stock. Update units_on_order in product details.
     """
     product = await select_for_update(product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail='Product with set id not found.')
     await check_availability(product, quantity)
 
     data = ProductUpdate(product_id=product_id, units_on_order=product['units_on_order'] + quantity)
