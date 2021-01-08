@@ -10,7 +10,7 @@ z modułu `os` i je pobrać `DATABASE_URI = os.getenv('DATABASE_URI')`. Następn
 do których będziemy się odnosić (omówione bardziej szczegółowo w kolejnym punkcie). Do pisania zapytań użyty został 
 [moduł `databases`](https://www.encode.io/databases/) gdzie do klasy `Database` również przekazujemy wcześniej uzyskane 
 URI. Przykład dostępny 
-[tutaj](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/db.py#L1-L22).
+[tutaj](https://github.com/ethru/northwind_psql/blob/master/common/__init__.py#L1-L11).
 
 #### main.py
 
@@ -18,7 +18,7 @@ Importujemy silnik, bazę i metadane z pliku `db.py` - `from app.api.db import d
 `metadata.create_all(engine)`, a następnie tworzymy zdarzenia inicjujące oraz zamykające połączenie z bazą za pomocą 
 dekoratorów `@app.on_event("startup")` oraz `@app.on_event("shutdown")` gdzie `app` to instancja `FastAPI`. Odpowiednio 
 używamy `database.connect()` lub `database.disconnect()`. Całość kodu dostępna jest [tu
-](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/main.py#L4-L18).
+](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/main.py#L4-L23).
 
 ### Modele danych
 
@@ -30,7 +30,7 @@ Omówione na podstawie tabeli `categories`, poniżej widoczny jej schemat:
 
 Do odzwierciedlenia tabeli najpierw musimy wykonać odpowiedni import:
 `from sqlalchemy import Column, Integer, LargeBinary, String, Table` . Następnie możemy stworzyć [nasz model
-](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/db.py#L13-L20):
+](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/models.py#L4-L15):
 ```python
 categories = Table(
     'categories',
@@ -67,7 +67,7 @@ class CategoryUpdate(CategoryIn):
     picture: Optional[bytes] = None
 ```
 `Optional` importujemy z modułu `typing`. Plik `models.py` dostępny jest pod tym [linkiem
-](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/models.py).
+](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/models.py#L18-L31).
 
 ### Zapytania
 
@@ -76,13 +76,13 @@ class CategoryUpdate(CategoryIn):
 Kiedy mamy już stworzony nasz model danych dzięki `SQLAlchemy`. Możemy się do niego odnieść tworząc zapytanie:
 `query=categories.select()`, które przekazujemy do odpowiedniej metody (np. `fetch_all()`) instacji `Database` z modułu 
 `databases`. Co w całości [wyglądało by tak
-](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/db.py#L32): 
+](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/db.py#L10-L12): 
 `database.fetch_all(query=categories.select())`.
 
 #### Rozszerzone
 
 Kiedy chcemy wybrać poszczególny rekord, np. po jego id możemy to uzyskać w [następujący sposób
-](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/db.py#L25-L27):
+](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/db.py#L5-L7):
 ```python
 async def get_category(category_id: int):
     """Get category with set id from database."""
@@ -93,7 +93,7 @@ async def get_category(category_id: int):
 
 Możemy również korzystać z surowych zapytań SQL za pomocą metody `execute`. Przyjmuje ona argument `values`, do którego 
 przekazujemy słownik z kluczami (nazwy zastępowane w zapytaniu) oraz ich wartościami. Wygląda to [następująco
-](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/db.py#L25-L27):
+](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/db.py#L51-L52):
 ```python
 query = "UPDATE products SET category_id = :empty WHERE category_id = :id"
 await database.execute(query=query, values={'empty': empty, 'id': category_id})
@@ -105,11 +105,12 @@ By stworzyć transakcję używamy dekoratora `@database.transaction()`. Mamy wte
 w całości albo w ogóle. Przykładowo usuńmy jakąś kategorię. Wtedy musimy odnieść się również do produktów z nią 
 związanych. W takim wypadku możemy je wszystkie podpiąć do nowej kategorii `UNLISTED`. Jeśli nie ma jej jeszcze w bazie 
 to należy ją najpierw stworzyć. Dopiero po przepięciu produktów usuwamy wybraną kategorię. Transakcja ma [postać
-](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/db.py#L64-L75):
+](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/db.py#L44-L55):
 ```python
 @database.transaction()
 async def delete(category_id: int):
     """Remove category with set id from database.
+    
     Unlink all products connected to that category by replacing category_id with id of unlisted category.
     """
     empty = await get_unlisted_category()
@@ -123,4 +124,4 @@ async def delete(category_id: int):
 #### Odnośnik
 
 Powyższe przykłady dostępne są w pliku `db.py` serwisu `categories`. Można je zobaczyć korzystając z [linku
-](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/db.py#L25-L75).
+](https://github.com/ethru/northwind_psql/blob/master/categories-service/app/api/db.py#L5-L55).
