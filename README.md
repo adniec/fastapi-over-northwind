@@ -37,6 +37,7 @@ następnie `Execute` by zobaczyć informację zwrotną z danego zapytania.
 
 - [Wprowadzenie](docs/Wprowadzenie.pdf) do projektu oraz używanych technologii
 - [Przewodnik](docs/Przewodnik.md) po wykorzystywanej technologii
+- [Realizacja](docs/Zamawianie.md) zamawiania produktów
 
 ### Realizacja
 
