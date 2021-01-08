@@ -5,7 +5,7 @@ from app.api.models import customers, employees, shippers
 
 
 async def get_customer_by_id(customer_id: str):
-    """Get all orders stored in database."""
+    """Get customer details from database by set id."""
     return await database.fetch_one(query=customers.select().where(customers.c.customer_id == customer_id))
 
 
