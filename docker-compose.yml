@@ -1,21 +1,6 @@
 version: '3'
 
 services:
-  test_service:
-    build: ./test-service
-    container_name: test
-    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-    volumes:
-      - ./test-service/:/app/
-    ports:
-      - 8001:8000
-    environment:
-      - DATABASE_URI=postgresql://northwind_user:thewindisblowing@db/northwind
-      - LOGIN=admin
-      - PASSWORD=password
-    depends_on:
-      - db
-
   categories_service:
     build: ./categories-service
     container_name: categories
@@ -163,7 +148,6 @@ services:
       - ./nginx_config.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - auth_service
-      - test_service
       - categories_service
       - products_service
 
