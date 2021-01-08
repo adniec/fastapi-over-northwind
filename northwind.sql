@@ -156,7 +156,9 @@ CREATE TABLE orders (
     ship_city character varying(15),
     ship_region character varying(15),
     ship_postal_code character varying(10),
-    ship_country character varying(15)
+    ship_country character varying(15),
+    paypal_id character varying(25),
+    status character varying(10)
 );
 
 
@@ -3831,7 +3833,7 @@ ALTER TABLE ONLY orders
 --
 
 ALTER TABLE ONLY order_details
-    ADD CONSTRAINT fk_order_details_products FOREIGN KEY (product_id) REFERENCES products;
+    ADD CONSTRAINT fk_order_details_products FOREIGN KEY (product_id) REFERENCES products ON DELETE CASCADE;
 
 
 --
@@ -3839,7 +3841,7 @@ ALTER TABLE ONLY order_details
 --
 
 ALTER TABLE ONLY order_details
-    ADD CONSTRAINT fk_order_details_orders FOREIGN KEY (order_id) REFERENCES orders;
+    ADD CONSTRAINT fk_order_details_orders FOREIGN KEY (order_id) REFERENCES orders ON DELETE CASCADE;
 
 
 --
