@@ -2,6 +2,14 @@
 
 ![Diagram](docs/img/ER.png)
 
+### Dokumentacja
+
+- [Instrukcja](docs/Instrukcja.md) użytkownika
+- [Prezentacja](docs/Wprowadzenie.pdf) projektu i technologii
+- [Przewodnik](docs/Przewodnik.md) po wykorzystywanej technologii
+- [Realizacja](docs/Zamawianie.md) zamawiania produktów
+- [Wyniki](docs/Pomiary.md) pomiarów
+
 ### Struktura projektu
 
 Główny folder zawiera pliki niezbędne do stworzenia bazy, na której będziemy operować oraz przygotowania środowiska 
@@ -9,35 +17,9 @@ pracy. Znajdziemy w nim pliki konfiguracyjne takie jak: [docker-compose.yml](doc
 dostosowanie kontenerów czy [nginx_config.conf](nginx_config.conf) odpowiedzialny za ustawienia serwera. Znajduje się 
 tu również plik [northwind.sql](northwind.sql), dzięki któremu tworzona jest nasza baza.
 
-Do folderu `docs` sukcesywnie będzię dodawana dokumentacja uzyskana podczas rozwijania projektu.
+Folder `docs` zawiera dokumentację uzyskaną podczas rozwijania projektu.
 
-Serwisy komunikujące się z bazą danych zostaną stosownie dodane w odpowiednich folderach, przykładowo `test-service`.
-
-### Uruchomienie
-
-Wymagana jest wcześniejsza instalacja [dockera](https://www.docker.com/get-started) oraz 
-[docker-compose](https://docs.docker.com/compose/install/). Następnie wykonujemy kolejno komendy w terminalu:
-
-```
-git clone https://github.com/ethru/northwind_psql.git
-cd northwind_psql
-docker-compose up
-```
-
-Po wykonaniu powyższych czynności jesteśmy w stanie komunikować się z naszym api za pomocą przeglądarki. By zobaczyć 
-dokumentację oraz przetestować działanie danego serwisu należy przejść pod adres `http://0.0.0.0:8080/api/test/docs` 
-(pokazane na przykładzie `test-service`).
-
-![Test](docs/img/test.png)
-
-Po kliknięciu na interesujący nas endpoint zostanie wyświetlony jego opis. Możemy wtedy użyć przycisku `Try it out` a 
-następnie `Execute` by zobaczyć informację zwrotną z danego zapytania.
-
-### Dokumentacja
-
-- [Wprowadzenie](docs/Wprowadzenie.pdf) do projektu oraz używanych technologii
-- [Przewodnik](docs/Przewodnik.md) po wykorzystywanej technologii
-- [Realizacja](docs/Zamawianie.md) zamawiania produktów
+Serwisy komunikujące się z bazą danych są dodane w odpowiednich folderach, przykładowo `auth-service`.
 
 ### Realizacja
 
