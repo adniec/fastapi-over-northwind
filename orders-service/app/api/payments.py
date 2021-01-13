@@ -1,12 +1,12 @@
-import os
-
 from fastapi import HTTPException
 from paypalcheckoutsdk.core import PayPalHttpClient, SandboxEnvironment
 from paypalcheckoutsdk.orders import OrdersCreateRequest, OrdersCaptureRequest
 from paypalhttp import HttpError
 
-CLIENT = os.getenv('PAYPAL_CLIENT')
-SECRET = os.getenv('PAYPAL_SECRET')
+from app.api import get_variable
+
+CLIENT = get_variable('PAYPAL_CLIENT')
+SECRET = get_variable('PAYPAL_SECRET')
 
 environment = SandboxEnvironment(client_id=CLIENT, client_secret=SECRET)
 client = PayPalHttpClient(environment)

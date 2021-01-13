@@ -1,4 +1,4 @@
-version: '3'
+version: '3.1'
 
 services:
   categories_service:
@@ -11,9 +11,11 @@ services:
       - ./common/auth.py:/app/app/api/auth.py
     ports:
       - 8002:8000
+    secrets:
+      - db_uri
     environment:
       - AUTH_SERVICE_URL=http://auth_service:8000/api/auth/basic
-      - DATABASE_URI=postgresql://northwind_user:thewindisblowing@db/northwind
+      - DATABASE_URI=/run/secrets/db_uri
     depends_on:
       - auth_service
       - db
@@ -26,9 +28,12 @@ services:
       - ./auth-service/:/app/
     ports:
       - 8003:8000
+    secrets:
+      - login
+      - password
     environment:
-      - LOGIN=admin
-      - PASSWORD=password
+      - LOGIN=/run/secrets/login
+      - PASSWORD=/run/secrets/password
     depends_on:
       - db
 
@@ -42,9 +47,11 @@ services:
       - ./common/auth.py:/app/app/api/auth.py
     ports:
       - 8004:8000
+    secrets:
+      - db_uri
     environment:
       - AUTH_SERVICE_URL=http://auth_service:8000/api/auth/basic
-      - DATABASE_URI=postgresql://northwind_user:thewindisblowing@db/northwind
+      - DATABASE_URI=/run/secrets/db_uri
     depends_on:
       - auth_service
       - db
@@ -59,11 +66,15 @@ services:
       - ./common/auth.py:/app/app/api/auth.py
     ports:
       - 8005:8000
+    secrets:
+      - db_uri
+      - paypal_client
+      - paypal_secret
     environment:
       - AUTH_SERVICE_URL=http://auth_service:8000/api/auth/basic
-      - DATABASE_URI=postgresql://northwind_user:thewindisblowing@db/northwind
-      - PAYPAL_CLIENT=Acf6UcFexAEmTjjuHcNJWTiS07SiJ1UC24p7XofwuJD0pPX_jJBRf3RbnivVvkT6fJ8vZbFAezJA5vfM
-      - PAYPAL_SECRET=EPXxxbwo-sKBW764n9LKDVytixvLXBeGTsf9E8ZVHzKpBaGrH-8ejxfF9lp7UiDsCbfsDUR9321DNwOa
+      - DATABASE_URI=/run/secrets/db_uri
+      - PAYPAL_CLIENT=/run/secrets/paypal_client
+      - PAYPAL_SECRET=/run/secrets/paypal_secret
     depends_on:
       - auth_service
       - products_service
@@ -72,10 +83,13 @@ services:
   db:
     image: postgres:12
     container_name: db
+    secrets:
+      - login
+      - password
     environment:
       POSTGRES_DB: northwind
-      POSTGRES_USER: northwind_user
-      POSTGRES_PASSWORD: thewindisblowing
+      POSTGRES_USER_FILE: /run/secrets/login
+      POSTGRES_PASSWORD_FILE: /run/secrets/password
     volumes:
       - ./dbdata:/var/lib/postgresql/data
       - ./northwind.sql:/docker-entrypoint-initdb.d/northwind.sql
@@ -110,9 +124,12 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/:/etc/grafana/provisioning/
+    secrets:
+      - login
+      - password
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=password
+      - GF_SECURITY_ADMIN_USER__FILE=/run/secrets/login
+      - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/password
       - GF_USERS_ALLOW_SIGN_UP=false
     restart: always
     depends_on:
@@ -154,3 +171,15 @@ services:
 volumes:
   prometheus_data:
   grafana_data:
+
+secrets:
+  db_uri:
+    file: ./secrets/db_uri.txt
+  login:
+    file: ./secrets/login.txt
+  password:
+    file: ./secrets/password.txt
+  paypal_client:
+    file: ./secrets/paypal_client.txt
+  paypal_secret:
+    file: ./secrets/paypal_secret.txt
