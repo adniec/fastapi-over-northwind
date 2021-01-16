@@ -5,5 +5,7 @@ orders-service/app/api/__init__.py
 orders-service/app/api/auth.py
 products-service/app/api/__init__.py
 products-service/app/api/auth.py
+reports-service/app/api/__init__.py
+reports-service/app/api/auth.py
 __pycache__/
 .idea/
