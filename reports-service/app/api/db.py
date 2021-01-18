@@ -84,3 +84,28 @@ async def get_sales_by_customer(from_date, to_date):
     )
     print(query)
     return await database.fetch_all(query=query)
+
+
+async def get_products_by_popularity(from_date, to_date):
+    """Return report about products by popularity in set period of time."""
+    query = select(
+        [
+            order_details.c.product_id,
+            func.round(func.sum(order_details.c.quantity)).label('sold')
+        ]
+    ).select_from(
+        orders.join(
+            order_details, orders.c.order_id == order_details.c.order_id
+        )
+    ).where(
+        and_(
+            orders.c.order_date >= from_date,
+            orders.c.order_date <= to_date,
+        )
+    ).group_by(
+        order_details.c.product_id
+    ).order_by(
+        desc('sold')
+    )
+    print(query)
+    return await database.fetch_all(query=query)
