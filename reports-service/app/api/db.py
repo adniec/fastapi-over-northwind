@@ -11,8 +11,27 @@ async def get_full_employee_name():
     return func.concat(*full_name).label('employee')
 
 
-async def get_employees_report(from_date, to_date):
-    """Return report about employees activity in set period of time from database."""
+async def get_employees_activity(from_date, to_date):
+    """Return report about employees activity in set period of time."""
+    conditions = [
+        orders.c.shipped_date >= from_date,
+        orders.c.shipped_date <= to_date,
+    ]
+    return await get_employees_report(conditions)
+
+
+async def get_employees_shipment_delays(from_date, to_date):
+    """Return report about employees shipment delays in set period of time."""
+    conditions = [
+        orders.c.shipped_date >= from_date,
+        orders.c.shipped_date <= to_date,
+        orders.c.shipped_date > orders.c.required_date
+    ]
+    return await get_employees_report(conditions)
+
+
+async def get_employees_report(conditions: list):
+    """Return report about employees according to set conditions."""
     query = select(
         [
             orders.c.employee_id,
@@ -26,8 +45,7 @@ async def get_employees_report(from_date, to_date):
         )
     ).where(
         and_(
-            orders.c.shipped_date >= from_date,
-            orders.c.shipped_date <= to_date
+            *conditions
         )
     ).group_by(
         orders.c.employee_id,

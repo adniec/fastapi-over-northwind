@@ -99,7 +99,4 @@ class Employee(BaseModel):
     employee_id: int
     employee: str
     title: str
-
-
-class EmployeeReport(Employee):
     orders: int
