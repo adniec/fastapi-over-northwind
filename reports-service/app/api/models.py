@@ -91,5 +91,15 @@ class Date(BaseModel):
         from_date = values.get('from_date')
         if from_date:
             if from_date > to_date:
-                raise ValueError('to date must be greater than from date')
+                raise ValueError('to date must be greater or equal from date')
             return to_date
+
+
+class Employee(BaseModel):
+    employee_id: int
+    employee: str
+    title: str
+
+
+class EmployeeReport(Employee):
+    orders: int
