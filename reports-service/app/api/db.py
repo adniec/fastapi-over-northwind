@@ -1,5 +1,5 @@
 from app.api import database
-from app.api.models import employees, orders
+from app.api.models import customers, employees, order_details, orders
 
 from sqlalchemy.sql import and_, desc, func, select, text
 
@@ -55,6 +55,32 @@ async def get_employees_report(conditions: list):
         employees.c.title_of_courtesy
     ).order_by(
         desc('orders')
+    )
+    print(query)
+    return await database.fetch_all(query=query)
+
+
+async def get_sales_by_customer(from_date, to_date):
+    """Return report about sales by customer in set period of time."""
+    expression = order_details.c.unit_price * order_details.c.quantity * (1 - order_details.c.discount)
+    query = select(
+        [
+            orders.c.customer_id,
+            func.round(func.sum(expression)).label('profit')
+        ]
+    ).select_from(
+        orders.join(
+            order_details, orders.c.order_id == order_details.c.order_id
+        )
+    ).where(
+        and_(
+            orders.c.order_date >= from_date,
+            orders.c.order_date <= to_date,
+        )
+    ).group_by(
+        orders.c.customer_id
+    ).order_by(
+        desc('profit')
     )
     print(query)
     return await database.fetch_all(query=query)
