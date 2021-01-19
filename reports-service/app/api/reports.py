@@ -36,3 +36,10 @@ async def get_employees_shipment_delays(payload: Date):
 async def get_products_sales(payload: Date):
     """Return total number of each sold product in set period of time."""
     return await db.get_products_by_popularity(**payload.dict())
+
+
+@request_metrics.time()
+@reports.get('/products/reorder')
+async def get_products_to_reorder():
+    """Return report about products to reorder."""
+    return await db.get_products_to_reorder()

@@ -1,5 +1,5 @@
 from app.api import database
-from app.api.models import customers, employees, order_details, orders
+from app.api.models import customers, employees, order_details, orders, products, suppliers
 
 from sqlalchemy.sql import and_, desc, func, select, text
 
@@ -106,6 +106,38 @@ async def get_products_by_popularity(from_date, to_date):
         order_details.c.product_id
     ).order_by(
         desc('sold')
+    )
+    print(query)
+    return await database.fetch_all(query=query)
+
+
+async def get_products_to_reorder():
+    """Return report about products to reorder."""
+    available = products.c.units_in_stock - products.c.units_on_order
+    contact = func.concat(suppliers.c.contact_title, text("': '"), suppliers.c.contact_name,
+                          text("' via '"), suppliers.c.phone)
+    to_reorder = available - products.c.reorder_level
+
+    query = select(
+        [
+            products.c.product_id,
+            products.c.product_name,
+            products.c.units_in_stock,
+            products.c.units_on_order,
+            available.label('units_available'),
+            products.c.reorder_level,
+            suppliers.c.company_name.label('supplier'),
+            contact.label('contact')
+        ]
+    ).select_from(
+        products.join(
+            suppliers, products.c.supplier_id == suppliers.c.supplier_id
+        )
+    ).where(
+        and_(
+            products.c.discontinued == 0,
+            to_reorder <= 0
+        )
     )
     print(query)
     return await database.fetch_all(query=query)

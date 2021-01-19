@@ -75,6 +75,16 @@ products = Table(
     ForeignKeyConstraint(['category_id'], ['categories.category_id'])
 )
 
+suppliers = Table(
+    'suppliers',
+    metadata,
+    Column('supplier_id', String, primary_key=True),
+    Column('company_name', String),
+    Column('contact_name', String),
+    Column('contact_title', String),
+    Column('phone', String),
+)
+
 
 class Date(BaseModel):
     from_date: date
