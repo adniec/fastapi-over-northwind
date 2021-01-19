@@ -83,7 +83,10 @@ async def get_all():
 @orders.get('/details/{order_id}', response_model=List[OrderDetails], dependencies=[Depends(authorize)])
 async def get_details(order_id: int):
     """Return order details from passed id."""
-    return await db.orders.get_details_by_id(order_id)
+    details = await db.orders.get_details_by_id(order_id)
+    if not details:
+        raise HTTPException(status_code=404, detail='Order not found.')
+    return details
 
 
 @orders.post('/make', dependencies=[Depends(authorize)])
