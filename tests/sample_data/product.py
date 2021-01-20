@@ -28,20 +28,10 @@ def new():
 
 
 def populate_with_missing_field():
-    products = []
-    for key in new():
-        product = new()
-        product.pop(key)
-        products.append(product)
-    return products
+    return [{k: v for k, v in new().items() if k != key} for key in new()]
 
 
 def populate_with_wrong_field():
-    base = with_wrong_types()
-    base.pop('product_id')
-    products = []
-    for key in base:
-        product = new()
-        product[key] = base[key]
-        products.append(product)
-    return products
+    wrong = with_wrong_types()
+    wrong.pop('product_id')
+    return [{k: v if k != key else wrong[key] for k, v in new().items()} for key in wrong]
