@@ -17,7 +17,7 @@ def get(call, auth):
         ('/orders/details/11044', list, True),
         ('/orders/shippers', list, False),
         ('/products/1', dict, False),
-        ('/reports/products/reorder', list, False),
+        ('/reports/products/reorder', list, True),
 ))
 def test_correct_get_response(get, endpoint, instance, is_auth):
     response = get(endpoint, is_auth)
