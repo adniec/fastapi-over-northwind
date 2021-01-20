@@ -1,8 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from prometheus_client import Summary
 from typing import List
 
 from app.api import db
+from app.api.auth import authorize
 from app.api.models import Date, Employee
 
 reports = APIRouter()
@@ -11,35 +12,35 @@ request_metrics = Summary('request_processing_seconds', 'Time spent processing r
 
 
 @request_metrics.time()
-@reports.post('/customers/profit')
+@reports.post('/customers/profit', dependencies=[Depends(authorize)])
 async def get_profit_by_customer(payload: Date):
     """Return total profit from customer in set period of time."""
     return await db.get_sales_by_customer(**payload.dict())
 
 
 @request_metrics.time()
-@reports.post('/employees/activity', response_model=List[Employee])
+@reports.post('/employees/activity', response_model=List[Employee], dependencies=[Depends(authorize)])
 async def get_employees_activity(payload: Date):
     """Return employees activity in set period of time."""
     return await db.get_employees_activity(**payload.dict())
 
 
 @request_metrics.time()
-@reports.post('/employees/delays', response_model=List[Employee])
+@reports.post('/employees/delays', response_model=List[Employee], dependencies=[Depends(authorize)])
 async def get_employees_shipment_delays(payload: Date):
     """Return employees shipment delays in set period of time."""
     return await db.get_employees_shipment_delays(**payload.dict())
 
 
 @request_metrics.time()
-@reports.post('/products/popularity')
+@reports.post('/products/popularity', dependencies=[Depends(authorize)])
 async def get_products_sales(payload: Date):
     """Return total number of each sold product in set period of time."""
     return await db.get_products_by_popularity(**payload.dict())
 
 
 @request_metrics.time()
-@reports.get('/products/reorder')
+@reports.get('/products/reorder', dependencies=[Depends(authorize)])
 async def get_products_to_reorder():
     """Return report about products to reorder."""
     return await db.get_products_to_reorder()
