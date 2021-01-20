@@ -39,6 +39,8 @@ def test_not_found_get_response(get, endpoint, subject, is_auth):
 @pytest.mark.parametrize('endpoint, is_auth', (
         ('/categories/abc', False),
         ('/orders/details/abc', True),
+        ('/orders/send/1/abc', True),
+        ('/orders/send/abc/1', True),
         ('/products/abc', False),
 ))
 def test_wrong_value_get_responses(get, endpoint, is_auth):
