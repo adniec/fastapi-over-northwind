@@ -30,7 +30,7 @@ async def check_shipper(shipper_id: int):
     """Raise exception when shipper id is not in database."""
     shippers = await db.users.get_shippers()
     if not (shipper_id in [x['shipper_id'] for x in shippers]):
-        raise HTTPException(status_code=404, detail='Shipper id not found. Please provide correct one.')
+        raise HTTPException(status_code=404, detail='Shipper with set id not found.')
 
 
 async def check_order_to_send(order_id: int):
@@ -68,18 +68,21 @@ async def process_payment_status(order_id, payment_id, calls=3):
         return await db.process_order(order_id, True)
 
 
+@request_metrics.time()
 @orders.get('/shippers')
 async def list_shippers():
     """Return list with available shippers."""
     return await db.users.get_shippers()
 
 
+@request_metrics.time()
 @orders.get('/all', response_model=List[OrderOut], dependencies=[Depends(authorize)])
 async def get_all():
     """Return all orders stored in database."""
     return await db.orders.get_all()
 
 
+@request_metrics.time()
 @orders.get('/details/{order_id}', response_model=List[OrderDetails], dependencies=[Depends(authorize)])
 async def get_details(order_id: int):
     """Return order details from passed id."""
@@ -89,7 +92,8 @@ async def get_details(order_id: int):
     return details
 
 
-@orders.post('/make', dependencies=[Depends(authorize)])
+@request_metrics.time()
+@orders.post('/make', status_code=201, dependencies=[Depends(authorize)])
 async def make_order(payload: Order):
     """Make order for products."""
     details = await prepare_order(payload)
@@ -98,6 +102,7 @@ async def make_order(payload: Order):
     return PAY_URL + payment['payment_id']
 
 
+@request_metrics.time()
 @orders.get('/send/{order_id}/{freight}', dependencies=[Depends(authorize)])
 async def send(order_id: int, freight: float):
     """Change order status to SENT and set freight."""
