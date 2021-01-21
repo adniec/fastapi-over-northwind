@@ -1,38 +1,33 @@
 ### Zamówienia
 
-![make_order](img/order.png)
+![make_order](img/order.gif)
 
-Powyżej możemy zobaczyć przy pomocy Swagger'a endpoint odpowiedzialny za zamawianie produktów. Dostęp do niego jest 
-zablokowany. Po naciśnięciu kłódki widocznej w prawym górnym rogu zdjęcia pracownik może wprowadzić nagłówek generowany 
-za pomocą jego loginu i hasła. Wtedy uzyskuje dostęp do wprowadzania zamówień dla poszczególnych klientów.
-
-Nagłówek można przykładowo wygenerować za pomocą 
-[tego narzędzia](https://www.blitter.se/utils/basic-authentication-header-generator/). Domyślnie jest to Username: admin
-, Password: password . Co daje nagłówek `Basic YWRtaW46cGFzc3dvcmQ=`. Można to zmienić w pliku `docker-compose.yml`.
-
-Za walidację przesyłanych danych odpowiedzialny jest model modułu `pydantic` - `Order` opisany bardziej szczegółowo 
-poniżej. W niektórych miejscach podnoszone są również wyjątki `raise HTTPException(...)` z modułu `fastapi`. Co zostanie 
-przedstawione w opisie kodu.
+Powyżej możemy zobaczyć przykładowe złożenie zamówienia (nie sfinalizowane).
 
 Po wysłaniu właściwego zapytania tworzone są wpisy za pomocą transakcji w tabeli `orders`, `order_details` oraz 
 modyfikowana wartość `units_on_order` w `products`. Zwracany jest link do płatności za pomocą sandbox'u 
 [serwisu PayPal](https://www.sandbox.paypal.com/). W między czasie wywoływana jest w tle asynchroniczna funkcja 
-odpowiedzialna za cykliczne sprawdzanie statusu płatności. Kiedy po zadanej ilości prób wciąż nie ma wpłaty status 
-zamówienia zostaje ustawiony na `CANCELED`, a `units_on_order` wszystkich produktów wycofane w odpowiedniej transakcji. 
-Wpisy w `orders` oraz `order_details` pozostają dla możliwości ponowienia płatności w póżniejszym czasie.
+odpowiedzialna za cykliczne sprawdzanie statusu płatności. Kiedy po zadanej ilości prób (na potrzeby prezentacji liczba 
+znacznie zmniejszona) wciąż nie ma wpłaty status zamówienia zostaje ustawiony na `CANCELED`, a `units_on_order` 
+wszystkich produktów wycofane w odpowiedniej transakcji. Wpisy w `orders` oraz `order_details` pozostają dla możliwości 
+ponowienia płatności w póżniejszym czasie.
 
 Kiedy pracownik nadaje paczkę ma dostępny endpoint 
 [send](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/orders.py#L98-L106), w którym podaje 
 `order_id` oraz `freight`. W tym momencie za pomocą transakcji ze wszystkich produktów z zamówienia zostaje zredukowana 
 ilość `units_in_stock` oraz usunięta `units_on_order`.
 
+Za walidację przesyłanych danych odpowiedzialny jest model modułu `pydantic` - `Order` opisany bardziej szczegółowo 
+poniżej. W niektórych miejscach podnoszone są również wyjątki `raise HTTPException(...)` z modułu `fastapi`. Co zostanie 
+przedstawione w opisie kodu.
+
 #### Realizacja
 
 Endpoint służący do składania zamówień wygląda 
-[następująco](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/orders.py#L89-L95):
+[następująco](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/orders.py#L88-L94):
 
 ```python
-@orders.post('/make', dependencies=[Depends(authorize)])
+@orders.post('/make', status_code=201, dependencies=[Depends(authorize)])
 async def make_order(payload: Order):
     """Make order for products."""
     details = await prepare_order(payload)
@@ -41,10 +36,10 @@ async def make_order(payload: Order):
     return PAY_URL + payment['payment_id']
 ```
 
-Jest on zależny od funkcji autoryzacji (`dependencies=[Depends(authorize)]`) pobranej z `auth-service`. Przyjmuje on 
-`payload` reprezentowane przez klasę `Order` opisaną poniżej. Natępnie korzysta z funkcji `prepare_order` odpowiedzalnej 
-za przygotowanie danych zamówienia. Ma ona 
-[postać](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/orders.py#L45-L53):
+Jest on zależny od funkcji autoryzacji (`dependencies=[Depends(authorize)]`) komunikującej się z `auth-service`. 
+Przyjmuje on dane (`payload`) reprezentowane przez klasę `Order` opisaną poniżej. Natępnie korzysta z funkcji 
+`prepare_order` odpowiedzalnej za przygotowanie danych zamówienia. Ma ona 
+[postać](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/orders.py#L38-L45):
 
 ```python
 async def prepare_order(payload: Order) -> OrderIn:
@@ -53,7 +48,6 @@ async def prepare_order(payload: Order) -> OrderIn:
     if payload.address:
         address = payload.address
 
-    await check_shipper(payload.ship_via)
     employee = await db.users.get_employee()
     return OrderIn(employee_id=employee, order_date=date.today(), **payload.dict(), **address.dict())
 ```
@@ -92,33 +86,8 @@ Wracając do funkcji `prepare_order`:
 Pobranie adresu użytkownika zapewnia sprawdzenie czy znajduje się on w bazie danych. Następnie jeśli podał on inny 
 adres wysyłki w zapytaniu wtedy to on jest przetwarzany.
 
-Kolejnym krokiem jest weryfikacja numeru dostawcy `await check_shipper(payload.ship_via)` odbywa się ona przez 
-[funkcję]():
-
-```python
-async def check_shipper(shipper_id: int):
-    """Raise exception when shipper id is not in database."""
-    shippers = await db.users.get_shippers()
-    if not (shipper_id in [x['shipper_id'] for x in shippers]):
-        raise HTTPException(status_code=404, detail='Shipper id not found. Please provide correct one.')
-```
-
-sprawdzającą czy dane id znajduje się w liście dostawców.
-
-Zapytanie ma [postać](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/db/users.py#L18-L20):
-
-```python
-async def get_shippers():
-    """Return shippers data."""
-    return await database.fetch_all(query=shippers.select())
-```
-
-Nawiasem mówiąc wykorzystywane jest również w endpointcie 
-[listującym](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/orders.py#L71-L74) 
-wszystkich dostawców dla użytkownika. Kiedy id nie zostanie znalezione w bazie wywoływany jest wyjątek.
-
-Kontynuując opis `prepare_order` kolejna linijka `employee = await db.users.get_employee()` pobiera id pracownika 
-odpowiedzialnego za realizacje zamówienia. Funkcja prezentuje się 
+Kolejna linijka `employee = await db.users.get_employee()` pobiera id pracownika odpowiedzialnego za realizacje 
+zamówienia. Funkcja prezentuje się 
 [tak](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/db/users.py#L12-L15):
 
 ```python
@@ -134,7 +103,7 @@ order_date=date.today(), **payload.dict(), **address.dict())`.
 
 Teraz wróćmy do omawiania docelowej funkcji `make_order`, w której kolejnym krokiem jest stworzenie zamówinia z 
 otrzymanych danych `payment = await db.orders.make(payload.products, details)`. Wywołana jest transakcja z pliku 
-[orders](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/db/orders.py#L52-L74):
+[orders](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/db/orders.py#L53-L78):
 
 ```python
 @database.transaction()
@@ -143,7 +112,10 @@ async def make(products: List[Product], user_data: OrderIn):
     Fill order details with products. Set units on order. Make payment request via Paypal. Return dict with order_id and
     payment_id.
     """
-    order_id = await add_order(user_data)
+    try:
+        order_id = await add_order(user_data)
+    except ForeignKeyViolationError:
+        raise HTTPException(status_code=404, detail='Shipper with set id not found.')
     total_cash = 0
 
     for product in products:
@@ -162,7 +134,7 @@ async def make(products: List[Product], user_data: OrderIn):
 ```
 
 Tworzy ona najpierw 
-[wpis](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/db/orders.py#L26-L29) 
+[wpis](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/db/orders.py#L27-L30) 
 w tabeli `orders` z przesłanych danych:
 
 ```python
@@ -173,7 +145,10 @@ async def add_order(payload: OrderIn):
     return await database.execute(query=query)
 ```
 
-By następnie kolejno wprowadzić dane wszystkich zamawianych produktów. Najpierw wywoływana jest 
+Jeśli podczas jego tworzenia wystąpi błąd związany z kluczem obcym dostawcy to transakcja zostanie przerwana i błąd 
+`raise HTTPException(status_code=404, detail='Shipper with set id not found.')` zwrócony użytkownikowi.
+
+W przeciwnym wypadku wprowadzane są dane wszystkich zamawianych produktów. Najpierw wywoływana jest 
 [funkcja](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/db/products.py#L28-L40) 
 z pliku `api/db/products.py` edytująca jednostki w tabeli `products`.
 
@@ -237,7 +212,7 @@ linijki:
         await check_query_result(await add_order_details(details))
 ```
 a sama funkcja
-[add_order_details](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/db/orders.py#L32-L35) 
+[add_order_details](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/db/orders.py#L33-L36) 
 prezentuje się następująco:
 
 ```python
@@ -273,7 +248,7 @@ Kiedy transakcja przeszła pomyślnie wszystkie powyższe kroki zwracamy id pła
 
 Teraz jedyne co należy zrobić w kolejnym kroku `make_order` to wywołać asynchronicznie funkcję 
 `loop.create_task(process_payment_status(**payment))`, która cyklicznie w tle będzie sprawdzała status płatności i ją 
-właściwie [przetwarzała](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/orders.py#L56-L68) 
+właściwie [przetwarzała](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/orders.py#L48-L60) 
 oraz zwrócić link do płatności.
 
 ```python
@@ -364,12 +339,12 @@ orders = Table(
     'orders',
     metadata,
     Column('order_id', Integer, primary_key=True),
-    Column('customer_id', String, primary_key=True),
-    Column('employee_id', Integer, primary_key=True),
+    Column('customer_id', String),
+    Column('employee_id', Integer),
     Column('order_date', Date),
     Column('required_date', Date, nullable=True),
     Column('shipped_date', Date, nullable=True),
-    Column('ship_via', Integer, primary_key=True),
+    Column('ship_via', Integer),
     Column('freight', Float, nullable=True),
     Column('ship_name', String),
     Column('ship_address', String),
@@ -390,8 +365,8 @@ kodu potrzebnego do realizacji płatności oraz statusu niezbędnego przy przetw
 ##### Pydantic
 
 Powyższy model został również 
-[przełożony](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/models.py#L134-L149) jako rozszerzenie 
-klasy `BaseModel` modułu `pydantic`:
+[przełożony](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/models.py#L134-L149) jako 
+rozszerzenie klasy `BaseModel` modułu `pydantic`:
 
 ```python
 class OrderIn(BaseModel):
@@ -436,57 +411,9 @@ Wymaga on podania id klienta, do którego ma dotrzeć zamównie, daty dostarczen
 dostawy (opcjonalnie - jeśli go nie ma zostanie pobrany adres klienta z bazy) oraz listy zawierającej id zamawianych 
 produktów wraz z ich ilością.
 
+![errors](img/errors.gif)
+
 ##### Pozostałe
 
 Wszystkie modele użyte przy przetwarzaniu zamówień dostępne są w pliku `models.py` serwisu `orders`. Dostępne 
 [pod linkiem](https://github.com/ethru/northwind_psql/blob/master/orders-service/app/api/models.py#L1-L160).
-
-#### Walidacja zapytań
-
-Poniżej kilka przykładów odpowiedzi na zapytania z błędnymi wartościami.
-
-Brak dostępu do zasobu:
-
-![no auth](img/error_auth.png)
-
-Błędne id klienta:
-
-![no customer id](img/error_customer.png)
-
-Zła data:
-
-![wrong date](img/error_date.png)
-
-Błędne id dostawcy:
-
-![no shipper id](img/error_shipper.png)
-
-Brak dostępnych jednostek produktu:
-
-![no units](img/error_units.png)
-
-Błędne id produktu:
-
-![no product](img/error_products.png)
-
-#### Przykładowe złożenie zamówienia
-
-Zapytanie:
-
-![request](img/order_request.png)
-
-Odpowiedź:
-
-![reply](img/order_link.png)
-
-Dane z tabeli `orders`:
-
-![orders](img/order_pending.png)
-
-Dane z tabeli `order_details`:
-
-![orders details](img/order_details.png)
-
-Płatność:
-
-![payment](img/order_paypal.png)
