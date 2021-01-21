@@ -1,3 +1,4 @@
+from asyncpg.exceptions import ForeignKeyViolationError
 from typing import List
 
 from fastapi import HTTPException
@@ -56,7 +57,10 @@ async def make(products: List[Product], user_data: OrderIn):
     Fill order details with products. Set units on order. Make payment request via Paypal. Return dict with order_id and
     payment_id.
     """
-    order_id = await add_order(user_data)
+    try:
+        order_id = await add_order(user_data)
+    except ForeignKeyViolationError:
+        raise HTTPException(status_code=404, detail='Shipper with set id not found.')
     total_cash = 0
 
     for product in products:

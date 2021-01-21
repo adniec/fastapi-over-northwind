@@ -16,12 +16,12 @@ def correct():
         },
         'products': [
             {
-                'product_id': 2,
-                'quantity': 1
+                'product_id': 6,
+                'quantity': 4
             },
             {
-                'product_id': 9,
-                'quantity': 2
+                'product_id': 22,
+                'quantity': 3
             }
         ]
     }

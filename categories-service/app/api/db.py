@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+
 from app.api import database
 from app.api.models import categories, CategoryIn, CategoryOut
 
@@ -18,14 +20,13 @@ async def add_category(payload: CategoryIn):
     return await database.execute(query=query)
 
 
-async def get_unlisted_category():
+async def get_unlisted_category_id():
     """Return id of UNLISTED category.
 
     If category does not exist then create it.
     """
     name = 'UNLISTED'
-    query = 'SELECT category_id FROM categories WHERE category_name=:name'
-    unlisted = await database.fetch_one(query=query, values={'name': name})
+    unlisted = await database.fetch_one(query=categories.select().where(categories.c.category_name == name))
     if unlisted:
         return unlisted['category_id']
 
@@ -33,12 +34,12 @@ async def get_unlisted_category():
     return await add_category(unlisted)
 
 
-async def update(payload: CategoryOut):
+async def update(payload: dict):
     """Update category with set id in database."""
-    query = categories.update().where(
-        categories.c.category_id == payload.category_id
-    ).values(**payload.dict()).returning(categories)
-    return await database.execute(query=query)
+    query = categories.update().where(categories.c.category_id == payload['category_id'])
+    payload.pop('category_id')
+    query = query.values(**payload).returning(categories)
+    return await database.fetch_one(query=query)
 
 
 @database.transaction()
@@ -47,9 +48,12 @@ async def delete(category_id: int):
 
     Unlink all products connected to that category by replacing category_id with id of unlisted category.
     """
-    empty = await get_unlisted_category()
+    if not await get_category(category_id):
+        raise HTTPException(status_code=404, detail='Category not found.')
+
+    empty = await get_unlisted_category_id()
     query = "UPDATE products SET category_id = :empty WHERE category_id = :id"
     await database.execute(query=query, values={'empty': empty, 'id': category_id})
 
     query = categories.delete().where(categories.c.category_id == category_id).returning(categories)
-    return await database.execute(query=query)
+    return await database.fetch_one(query=query)

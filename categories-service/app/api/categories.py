@@ -1,4 +1,5 @@
 import base64
+from functools import wraps
 import imghdr
 from typing import List
 
@@ -13,6 +14,15 @@ categories = APIRouter()
 
 request_metrics = Summary('request_processing_seconds', 'Time spent processing request')
 
+def raise_404_if_none(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        result = await func(*args, **kwargs)
+        if not result:
+            raise HTTPException(status_code=404, detail='Category not found.')
+        return result
+
+    return wrapper
 
 @request_metrics.time()
 @categories.get('/all', response_model=List[CategoryOut])
@@ -23,12 +33,10 @@ async def get_all():
 
 @request_metrics.time()
 @categories.get('/{category_id}', response_model=CategoryOut)
+@raise_404_if_none
 async def get_by_id(category_id: int):
     """Return category with set id."""
-    category = await db.get_category(category_id)
-    if not category:
-        raise HTTPException(status_code=404, detail='Category not found.')
-    return category
+    return await db.get_category(category_id)
 
 
 @request_metrics.time()
@@ -51,23 +59,14 @@ async def upload_file(category_id: int, file: UploadFile = File(...)):
 
 @request_metrics.time()
 @categories.put('/update', response_model=CategoryOut, dependencies=[Depends(authorize)])
+@raise_404_if_none
 async def update(payload: CategoryUpdate):
     """Update category with set id by sent payload."""
-    category = await get_by_id(payload.category_id)
-
-    data = CategoryOut(**category)
-    new_data = payload.dict(exclude_unset=True)
-    merged = data.copy(update=new_data)
-
-    if payload.category_id == await db.update(merged):
-        return merged
+    return await db.update(payload.dict(exclude_unset=True))
 
 
 @request_metrics.time()
 @categories.delete('/del/{category_id}', response_model=CategoryOut, dependencies=[Depends(authorize)])
 async def delete(category_id: int):
     """Delete category with set id."""
-    category = await get_by_id(category_id)
-
-    if category_id == await db.delete(category_id):
-        return category
+    return await db.delete(category_id)

@@ -26,13 +26,6 @@ async def get_customer_address(customer_id: str) -> Address:
     return Address(**customer)
 
 
-async def check_shipper(shipper_id: int):
-    """Raise exception when shipper id is not in database."""
-    shippers = await db.users.get_shippers()
-    if not (shipper_id in [x['shipper_id'] for x in shippers]):
-        raise HTTPException(status_code=404, detail='Shipper with set id not found.')
-
-
 async def check_order_to_send(order_id: int):
     """Raise exception if order with set id does not exists or if it has wrong status."""
     order = await db.orders.get_by_id(order_id)
@@ -48,7 +41,6 @@ async def prepare_order(payload: Order) -> OrderIn:
     if payload.address:
         address = payload.address
 
-    await check_shipper(payload.ship_via)
     employee = await db.users.get_employee()
     return OrderIn(employee_id=employee, order_date=date.today(), **payload.dict(), **address.dict())
 

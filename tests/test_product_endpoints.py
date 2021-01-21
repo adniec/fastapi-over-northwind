@@ -82,7 +82,7 @@ def test_product_create_with_wrong_foreign_key(call, auth, key):
 
 @pytest.mark.dependency(depends=['test_product_correct_create'])
 @pytest.mark.run(order=2)
-@pytest.mark.parametrize('key,value', product.from_db().items())
+@pytest.mark.parametrize('key,value', product.new().items())
 def test_product_correct_update(call, auth, ids, key, value):
     payload = {'product_id': ids[0], key: value}
     response = call('PUT', '/products/update', **auth, data=dumps(payload))

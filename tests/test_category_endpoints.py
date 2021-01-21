@@ -29,7 +29,7 @@ def test_category_create_with_missing_field(call, auth, payload):
 
 @pytest.mark.dependency(depends=['test_category_correct_create'])
 @pytest.mark.run(order=5)
-@pytest.mark.parametrize('key,value', category.from_db().items())
+@pytest.mark.parametrize('key,value', category.new().items())
 def test_category_correct_update(call, auth, ids, key, value):
     payload = {'category_id': ids[0], key: value}
     response = call('PUT', '/categories/update', **auth, data=dumps(payload))
