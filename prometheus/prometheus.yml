@@ -42,3 +42,9 @@ scrape_configs:
     static_configs:
       - targets:
           - products:8000
+  - job_name: reports-metrics
+    metrics_path: /api/reports/metrics
+    static_configs:
+      - targets:
+          - reports:8000
+

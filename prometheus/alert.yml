@@ -47,3 +47,12 @@ groups:
         annotations:
           summary: "Service Down"
           description: "All instances of {{ $labels.name }} has been down for more than one minute."
+
+      - alert: ReportsDown
+        expr: absent(container_memory_usage_bytes{name="reports"})
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service Down"
+          description: "All instances of {{ $labels.name }} has been down for more than one minute."
