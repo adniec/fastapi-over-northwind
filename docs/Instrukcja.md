@@ -1,3 +1,4 @@
+
 ### Instrukcja
 
 #### Uruchomienie
@@ -23,6 +24,7 @@ dokumentację oraz przetestować działanie danego serwisu należy przejść pod
 - http://0.0.0.0:8080/api/categories/docs
 - http://0.0.0.0:8080/api/products/docs
 - http://0.0.0.0:8080/api/orders/docs
+- http://0.0.0.0:8080/api/reports/docs
 
 #### Endpointy
 
@@ -41,3 +43,21 @@ autoryzacji.
 Nagłówek można przykładowo wygenerować za pomocą 
 [tego narzędzia](https://www.blitter.se/utils/basic-authentication-header-generator/). Domyślnie jest to Username: admin
 , Password: password . Co daje nagłówek `Basic YWRtaW46cGFzc3dvcmQ=`. Można to zmienić w pliku `docker-compose.yml`.
+
+#### Testy
+
+Umieszczone są w katalogu [tests](https://github.com/ethru/northwind_psql/tree/master/tests) by je uruchomić należy 
+najpierw zainstalować dodatki za pomocą terminala:
+
+```shell
+pip3 install pytest-dependency
+pip3 install pytest-ordering
+```
+
+Następnie należy przejść do katalogu głównego projektu i wywołać (w momencie gdy projekt jest uruchomiony):
+
+```python
+python3 -m pytest tests
+```
+
+![tests](img/tests.png)
