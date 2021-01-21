@@ -91,7 +91,7 @@ async def get_products_by_popularity(from_date, to_date):
     query = select(
         [
             order_details.c.product_id,
-            func.round(func.sum(order_details.c.quantity)).label('sold')
+            func.sum(order_details.c.quantity).label('sold')
         ]
     ).select_from(
         orders.join(
