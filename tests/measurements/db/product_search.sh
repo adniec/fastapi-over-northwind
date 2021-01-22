@@ -5,5 +5,5 @@
 
 for i in $(seq 1 100);
 do
-  psql -U northwind_user -d northwind -c 'SELECT * FROM products WHERE products.category_id = 7 AND products.discontinued = 0'
+  psql -U admin -d northwind -c 'SELECT * FROM products WHERE products.category_id = 7 AND products.discontinued = 0'
 done
