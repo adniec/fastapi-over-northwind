@@ -4,10 +4,13 @@
 
 ### Dokumentacja
 
-- [Instrukcja](docs/Instrukcja.md) użytkownika
-- [Prezentacja](docs/Wprowadzenie.pdf) projektu i technologii
-- [Przewodnik](docs/Przewodnik.md) po wykorzystywanej technologii
-- [Realizacja](docs/Zamawianie.md) zamawiania produktów
+- Opis:
+  - [Instrukcja](docs/Instrukcja.md) użytkownika
+  - [Prezentacja](docs/Wprowadzenie.pdf) projektu i technologii
+  - [Przewodnik](docs/Przewodnik.md) po wykorzystywanej technologii
+- Realizacja:
+  - [Zamawiania](docs/Zamawianie.md) produktów
+  - [Generowania](docs/Raporty.md) raportów
 - Pomiary:
     - [Opis](docs/Pomiary-opis.md) wykonywania pomiarów
     - [Pomiary](docs/Pomiary-crud.md) CRUD'u na tabeli products
