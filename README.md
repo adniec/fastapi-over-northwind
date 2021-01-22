@@ -9,6 +9,7 @@
   - [Prezentacja](docs/Wprowadzenie.pdf) projektu i technologii
   - [Przewodnik](docs/Przewodnik.md) po wykorzystywanej technologii
 - Realizacja:
+  - [CRUD](docs/CRUD.md) na tabeli produktów
   - [Zamawiania](docs/Zamawianie.md) produktów
   - [Generowania](docs/Raporty.md) raportów
 - Pomiary:
