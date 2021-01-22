@@ -8,7 +8,11 @@
 - [Prezentacja](docs/Wprowadzenie.pdf) projektu i technologii
 - [Przewodnik](docs/Przewodnik.md) po wykorzystywanej technologii
 - [Realizacja](docs/Zamawianie.md) zamawiania produktów
-- [Wyniki](docs/Pomiary.md) pomiarów
+- Pomiary:
+    - [Opis](docs/Pomiary-opis.md) wykonywania pomiarów
+    - [Pomiary](docs/Pomiary-crud.md) CRUD'u na tabeli products
+    - [Pomiary](docs/Pomiary-crud.md) z wykonania raportów
+    - [Wnioski](docs/Pomiary-wnioski.md) z pomiarów
 
 ### Struktura projektu
 
