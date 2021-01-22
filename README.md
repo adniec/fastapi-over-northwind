@@ -11,7 +11,7 @@
 - Pomiary:
     - [Opis](docs/Pomiary-opis.md) wykonywania pomiarów
     - [Pomiary](docs/Pomiary-crud.md) CRUD'u na tabeli products
-    - [Pomiary](docs/Pomiary-crud.md) z wykonania raportów
+    - [Pomiary](docs/Pomiary-raporty.md) z wykonania raportów
     - [Wnioski](docs/Pomiary-wnioski.md) z pomiarów
 
 ### Struktura projektu

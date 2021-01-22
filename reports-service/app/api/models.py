@@ -5,6 +5,13 @@ from sqlalchemy import Column, Date, Float, ForeignKeyConstraint, Integer, Strin
 
 from app.api import metadata
 
+categories = Table(
+    'categories',
+    metadata,
+    Column('category_id', String, primary_key=True),
+    Column('category_name', String)
+)
+
 customers = Table(
     'customers',
     metadata,
@@ -110,3 +117,28 @@ class Employee(BaseModel):
     employee: str
     title: str
     orders: int
+
+
+class Customer(BaseModel):
+    customer_id: str
+    company_name: str
+    profit: int
+
+
+class Product(BaseModel):
+    product_id: int
+    product_name: str
+    category_name: str
+
+
+class ProductPopular(Product):
+    sold: int
+
+
+class ProductReorder(Product):
+    units_in_stock: int
+    units_on_order: int
+    units_available: int
+    reorder_level: int
+    supplier: str
+    contact: str

@@ -4,7 +4,7 @@ from typing import List
 
 from app.api import db
 from app.api.auth import authorize
-from app.api.models import Date, Employee
+from app.api.models import Date, Customer, Employee, ProductPopular, ProductReorder
 
 reports = APIRouter()
 
@@ -12,7 +12,7 @@ request_metrics = Summary('request_processing_seconds', 'Time spent processing r
 
 
 @request_metrics.time()
-@reports.post('/customers/profit', dependencies=[Depends(authorize)])
+@reports.post('/customers/profit', response_model=List[Customer], dependencies=[Depends(authorize)])
 async def get_profit_by_customer(payload: Date):
     """Return total profit from customer in set period of time."""
     return await db.get_sales_by_customer(**payload.dict())
@@ -33,14 +33,14 @@ async def get_employees_shipment_delays(payload: Date):
 
 
 @request_metrics.time()
-@reports.post('/products/popularity', dependencies=[Depends(authorize)])
+@reports.post('/products/popularity', response_model=List[ProductPopular], dependencies=[Depends(authorize)])
 async def get_products_sales(payload: Date):
     """Return total number of each sold product in set period of time."""
     return await db.get_products_by_popularity(**payload.dict())
 
 
 @request_metrics.time()
-@reports.get('/products/reorder', dependencies=[Depends(authorize)])
+@reports.get('/products/reorder', response_model=List[ProductReorder], dependencies=[Depends(authorize)])
 async def get_products_to_reorder():
     """Return report about products to reorder."""
     return await db.get_products_to_reorder()
