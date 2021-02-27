@@ -4,6 +4,6 @@ fastapi==0.61.1
 SQLAlchemy==1.3.20
 uvicorn==0.11.3
 asyncio==3.4.3
-aiohttp==3.7.3
+aiohttp==3.7.4
 prometheus-client==0.9.0
 starlette-exporter==0.7.0
