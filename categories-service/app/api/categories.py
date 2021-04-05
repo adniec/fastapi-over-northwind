@@ -10,9 +10,24 @@ from app.api import db
 from app.api.auth import authorize
 from app.api.models import CategoryIn, CategoryOut, CategoryUpdate
 
+
+
+from elasticapm.contrib.starlette import make_apm_client
+
+APM_CONFIG = {
+    'SERVICE_NAME': 'Categories',
+    # 'ELASTIC_APM_SERVER_URL': 'http://apm-server:8200',
+    # 'SERVER_URL': 'http://apm-server:8200',
+    # 'SERVER_URL': 'http://127.0.0.1:8200',
+    # 'SECRET_TOKEN': 'ef735c0cc1e5aa0d4fe4a363804390776e7775fe',
+}
+
+apm = make_apm_client(APM_CONFIG)
+
 categories = APIRouter()
 
 request_metrics = Summary('request_processing_seconds', 'Time spent processing request')
+
 
 def raise_404_if_none(func):
     @wraps(func)
@@ -24,11 +39,17 @@ def raise_404_if_none(func):
 
     return wrapper
 
+
 @request_metrics.time()
 @categories.get('/all', response_model=List[CategoryOut])
 async def get_all():
     """Return all categories stored in database."""
-    return await db.get_categories()
+    try:
+        apm.capture_message('Lets try it')
+        1/0
+    except ZeroDivisionError:
+        apm.capture_exception()
+        return await db.get_categories()
 
 
 @request_metrics.time()
